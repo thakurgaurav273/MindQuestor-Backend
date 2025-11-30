@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { Quiz } from '../model/quiz.model';
+import { updateUserQuizHistory } from '../controller/user.controller';
 
 interface QuizSession {
   quizId: string;
@@ -71,7 +72,7 @@ export const setupQuizSocketHandlers = (io: Server) => {
     });
 
     // Join existing quiz
-    socket.on('quiz:join', (data: { quizId: string; participantId: string; participantName: string }) => {
+    socket.on('quiz:join', async (data: { quizId: string; participantId: string; participantName: string }) => {
       console.log('quiz:join received', { quizId: data.quizId, participantId: data.participantId, participantName: data.participantName });
 
       const quiz = quizSessions.get(data.quizId);
@@ -118,7 +119,20 @@ export const setupQuizSocketHandlers = (io: Server) => {
       });
 
       socket.join(data.quizId);
+      try {
+        const dbQuiz = await Quiz.findOne({ inviteCode: data.quizId });
 
+        if (dbQuiz) {
+          // Pass userId first, then the actual MongoDB ObjectId as string
+          await updateUserQuizHistory(data.participantId, dbQuiz._id.toString());
+          console.log(`Updated quiz history for user ${data.participantId}`);
+        } else {
+          console.log(`Warning: Quiz not found in database with invite code: ${data.quizId}`);
+        }
+      } catch (error) {
+        console.error('Error updating user quiz history:', error);
+        // Don't fail the join if history update fails
+      }
       console.log(`${data.participantName} successfully joined quiz ${data.quizId}`);
       console.log(`Quiz now has ${quiz.participants.length} participants`);
 
@@ -144,7 +158,7 @@ export const setupQuizSocketHandlers = (io: Server) => {
         totalParticipants: quiz.participants.length,
       });
 
-      console.log(`Broadcasted participant_joined to room ${data.quizId}`);
+      console.log(`Broaddcasted participant_joined to room ${data.quizId}`);
     });
 
     // Start the quiz

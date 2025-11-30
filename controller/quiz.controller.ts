@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getRandomQuestions } from "./question.controller";
 import { Quiz } from "../model/quiz.model";
+import { updateUserQuizHistory } from "./user.controller";
 
 const createQuiz = async (req: Request, res: Response) => {
   try {
@@ -19,6 +20,7 @@ const createQuiz = async (req: Request, res: Response) => {
 
     const newQuiz = new Quiz({
       inviteCode: inviteCode,
+      category: category,
       sessionStatus: sessionStatus,
       startTime: startTime,
       endTime: endTime,
@@ -27,7 +29,9 @@ const createQuiz = async (req: Request, res: Response) => {
       currentQuestionIndex: currentQuestionIndex,
       createdBy: createdBy
     })
+    
     newQuiz.save();
+    await updateUserQuizHistory(createdBy, newQuiz._id.toString());
     return res.status(200).json({ newQuiz });
   } catch (error) {
     console.error("Error in createQuiz:", error);
@@ -39,7 +43,7 @@ const getQuizDetails = async (req: Request, res: Response) => {
   const quizId = req.params.quizId;
 
   try {
-    const quizData = await Quiz.findOne({ inviteCode: quizId }).lean();
+    const quizData = await Quiz.findOne({ _id: quizId }).lean();
 
     if (!quizData) {
       return res.status(404).json({
@@ -63,5 +67,13 @@ const getQuizDetails = async (req: Request, res: Response) => {
   }
 };
 
+const updateQuizDetails = async (quizId: string, newStatus: string) => {
+  const updatedQuizDetails = await Quiz.findByIdAndUpdate(
+    quizId,
+    { sessionStatus: newStatus },
+    { new: true }
+  );
+  return updatedQuizDetails;
+};
 
-export { createQuiz, getQuizDetails };
+export { createQuiz, getQuizDetails, updateQuizDetails };

@@ -5,9 +5,9 @@ const QuizSchema = new mongoose.Schema({
     sessionStatus: { type: String, enum: ['WAITING', 'COMPLETED', 'ACTIVE'], default: 'not started' },
     startTime: { type: Date },
     endTime: { type: Date },
+    category:{type: String, default: 'Science'},
     difficulty: { type: String, enum: ['EASY', 'MEDIUM', 'HARD'], required: false },
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    currentQuestionIndex: { type: Number, default: 0 },
     chatEnabled: { type: Boolean, default: false, required: false },
     questions: [
         {
