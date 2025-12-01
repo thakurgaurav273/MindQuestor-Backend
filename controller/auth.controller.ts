@@ -49,7 +49,6 @@ const verifyTokenAndGetUserId = (token: string): string | null => {
 const me = async (req: Request, res: Response) => {
   try {
     const accessToken = req.headers.authorization?.split(' ')[1];
-    console.log("Access token received:", accessToken);
     if (!accessToken) {
       return res.status(401).json({ message: 'No access token provided' });
     }

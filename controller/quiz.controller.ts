@@ -67,6 +67,34 @@ const getQuizDetails = async (req: Request, res: Response) => {
   }
 };
 
+const getQuizDetailsByInviteCode = async (req: Request, res: Response) => {
+  const inviteCode = req.params.inviteCode;
+
+  try {
+    const quizData = await Quiz.findOne({ inviteCode: inviteCode }).lean();
+
+    if (!quizData) {
+      return res.status(404).json({
+        message: `Quiz with id: ${inviteCode} doesn't exist`,
+      });
+    }
+    
+    let filteredResults = {
+      ...quizData,
+      questions: quizData.questions.map((question) => {
+        const { correctAnswerIndex, ...rest } = question;
+        return rest;
+      }),
+    };
+    
+    return res.status(200).json({ quizDetails: filteredResults });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Error fetching quiz details',
+    });
+  }
+};
+
 const updateQuizDetails = async (quizId: string, newStatus: string) => {
   const updatedQuizDetails = await Quiz.findByIdAndUpdate(
     quizId,
@@ -76,4 +104,4 @@ const updateQuizDetails = async (quizId: string, newStatus: string) => {
   return updatedQuizDetails;
 };
 
-export { createQuiz, getQuizDetails, updateQuizDetails };
+export { createQuiz, getQuizDetails, updateQuizDetails, getQuizDetailsByInviteCode };

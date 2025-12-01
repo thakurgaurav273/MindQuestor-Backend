@@ -8,6 +8,7 @@ import userRoutes from './routes/user.route';
 import authRoutes from './routes/auth.route';
 import questionRoutes from './routes/question.route';
 import quizRoutes from "./routes/quiz.route";
+import chatRoutes from "./routes/chat.route";
 import cors from 'cors';
 import { setupQuizSocketHandlers } from './websocket/quizSocket';
 const app: express.Application = express();
@@ -33,6 +34,7 @@ app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
 app.use("/question", questionRoutes);
 app.use("/quiz", quizRoutes);
+app.use("/message", chatRoutes);
 setupQuizSocketHandlers(io);
 
 const connectToDatabase = async () => {
@@ -45,6 +47,13 @@ const connectToDatabase = async () => {
 }
 
 connectToDatabase();
+
+export const getIO = (): Server => {
+  if (!io) {
+    throw new Error("Socket.IO not initialized");
+  }
+  return io;
+};
 
 app.get('/', (req: express.Request, res: express.Response) => {
   res.send('Hello World with TypeScript and Express!');

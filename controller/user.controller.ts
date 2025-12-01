@@ -7,7 +7,6 @@ const createUser = async (req: express.Request, res: express.Response) => {
     try {
         const { username, email, password } = req.body;
 
-        console.log("Received user data:", req.body);
         if (!username || !email || !password) {
             return res.status(400).json({ message: 'Username, email, and password are required' });
         }
@@ -26,9 +25,7 @@ const createUser = async (req: express.Request, res: express.Response) => {
     }
 };
 
-const updateUserQuizHistory = async (uid: string, quizId: string) => {
-  console.log(uid, quizId, "quiz id is here.....")
-  
+const updateUserQuizHistory = async (uid: string, quizId: string) => {  
   try {
     const updatedUser = await User.findByIdAndUpdate(
       uid,
@@ -42,9 +39,6 @@ const updateUserQuizHistory = async (uid: string, quizId: string) => {
         runValidators: true
       }
     );
-
-    console.log("Updated user:", updatedUser);
-    console.log("Session history:", updatedUser?.sessionHistory);
     return updatedUser;
   } catch (error) {
     console.error("Error updating user quiz history:", error);

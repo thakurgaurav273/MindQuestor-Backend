@@ -1,9 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 interface IChatMessage extends Document {
-  sessionId: mongoose.Types.ObjectId;
   quizId: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId | null; // null for system messages
+  senderId: mongoose.Types.ObjectId | null;
   username: string;
   userAvatar?: string;
   message: string;
@@ -15,18 +14,12 @@ interface IChatMessage extends Document {
 }
 
 const chatMessageSchema = new Schema<IChatMessage>({
-  sessionId: {
-    type: Schema.Types.ObjectId,
-    ref: 'QuizSession',
-    required: true,
-    index: true
-  },
   quizId: {
     type: Schema.Types.ObjectId,
     ref: 'Quiz',
     required: true
   },
-  userId: {
+  senderId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     default: null
@@ -62,7 +55,6 @@ const chatMessageSchema = new Schema<IChatMessage>({
   }
 });
 
-// Index for efficient queries
-chatMessageSchema.index({ sessionId: 1, timestamp: 1 });
+chatMessageSchema.index({timestamp: 1 });
 
 export const ChatMessage = mongoose.model<IChatMessage>('ChatMessage', chatMessageSchema);
